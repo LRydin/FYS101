@@ -5,12 +5,12 @@ __copyright__ = "Copyright NMBU"
 
 import numpy as np
 
-from bokeh.io import output_notebook
-output_notebook()
-
 from bokeh.layouts import column, row
 from bokeh.models import ColumnDataSource, CustomJS, Slider
 from bokeh.plotting import figure, show
+
+from bokeh.io import output_notebook
+output_notebook()
 
 __all__ = [
     'projectile_motion',
@@ -21,9 +21,10 @@ print('                  ....                  ')
 print('   Current modules in fys101 are:')
 [print('   ' + a + '()') for a in __all__]
 
-def projectile_motion(g=9.80665):
+def projectile_motion():
     x = np.linspace(0, 15, 5000)
 
+    g=9.80665
     angle = 20
     velocity = 8
     y = x * np.tan(np.radians(angle)) - ((g*x**2)/(2* velocity ** 2 * np.cos(np.radians(angle))**2))
@@ -51,6 +52,6 @@ def projectile_motion(g=9.80665):
     velocity.js_on_change('value', callback)
     angle.js_on_change('value', callback)
 
-    show(row(plot, column(velocity, angle)))
+    output_notebook()
 
-    return None
+    return show(row(plot, column(velocity, angle)))
