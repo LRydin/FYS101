@@ -33,17 +33,17 @@ def projectile_motion(g = 9.80665):
     x = np.linspace(0, 15, 1000)
 
     # Create the figure and the line that we will manipulate
-    with plt.xkcd():
-        fig, ax = plt.subplots(figsize=(6,3.5))
-        line, = ax.plot(x, f(x, 8, 20), ':', color='k', lw=2)
+    # with plt.xkcd():
+    fig, ax = plt.subplots(figsize=(6,3.5))
+    line, = ax.plot(x, f(x, 8, 20), ':', color='k', lw=2)
 
-        dot, = ax.plot(d(8, 20), 0, marker='o', ms=10, color='red', lw=2)
+    dot, = ax.plot(d(8, 20), 0, marker='o', ms=10, color='red', lw=2)
 
-        text_ = ax.text(s='Distance: {:.2f}'.format(d(8, 20)), x=7.5, y=7,
-            color='red', ha='center', fontsize=14)
+    text_ = ax.text(s='Distance: {:.2f}'.format(d(8, 20)), x=7.5, y=7,
+        color='red', ha='center', fontsize=14)
 
     ax.set_xlabel('Distance [m]')
-    ax.set_xlabel('Height [m]')
+    ax.set_ylabel('Height [m]')
     ax.set_ylim([0,8])
     # adjust the main plot to make room for the sliders
     fig.subplots_adjust(left=0.25, bottom=0.25)
