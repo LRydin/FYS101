@@ -5,12 +5,16 @@ __copyright__ = "Copyright NMBU"
 
 import numpy as np
 
-from bokeh.layouts import column, row
-from bokeh.models import ColumnDataSource, CustomJS, Slider
-from bokeh.plotting import figure, show
+# from bokeh.layouts import column, row
+# from bokeh.models import ColumnDataSource, CustomJS, Slider
+# from bokeh.plotting import figure, show
 
-from bokeh.io import output_notebook
-output_notebook()
+# from bokeh.io import output_notebook
+
+import matplotlib.pyplot as plt
+from matplotlib.widgets import Slider, Button
+
+# output_notebook()
 
 __all__ = [
     'projectile_motion',
@@ -21,37 +25,65 @@ print('                  ....                  ')
 print('   Current modules in fys101 are:')
 [print('   ' + a + '()') for a in __all__]
 
-def projectile_motion():
-    x = np.linspace(0, 15, 5000)
+def projectile_motion(g = 9.80665):
 
-    g=9.80665
-    angle = 20
-    velocity = 8
-    y = x * np.tan(np.radians(angle)) - ((g*x**2)/(2* velocity ** 2 * np.cos(np.radians(angle))**2))
+    # The parametrized function to be plotted
+    def f(x, v, phi):
+        return x * np.tan(np.radians(phi)) \
+            - ((g*x**2)/(2* v **2 * np.cos(np.radians(phi))**2))
 
-    source = ColumnDataSource(data=dict(x=x, y=y))
+    x = np.linspace(0, 15, 1000)
 
-    plot = figure(y_range=(0, 8), width=250, height=250, toolbar_location=None)
+    # Create the figure and the line that we will manipulate
+    fig, ax = plt.subplots(figsize=(6,4))
+    line, = ax.plot(x, f(x, 8, 10), ':', color='k', lw=2)
+    ax.set_xlabel('Distance [m]')
+    ax.set_xlabel('Height [m]')
+    ax.set_ylim([0,8])
 
-    plot.line('x', 'y', source=source, line_width=3, line_alpha=0.6)
+    def d(v, phi):
+        return ((2 * v * np.sin(np.radians(phi))) / g ) * np.cos(np.radians(phi)) * v
 
-    velocity = Slider(start=0.1, end=12, value=8, step=.1, title="Velocity")
-    angle = Slider(start=0, end=90, value=20, step=1, title="Angle")
+    dot, = ax.plot(d(8, 10), 0, marker='o', color='red', lw=2)
 
-    callback = CustomJS(args=dict(source=source, velocity=velocity, angle=angle),
-                        code="""
-        const g = 9.80665
-        const v = velocity.value
-        const phi = angle.value
+    text_ = ax.text(s='Distance: {:.2f}'.format(d(8, 10)), x=7.5, y=7,
+        color='red', ha='center', fontsize=14)
 
-        const x = source.data.x
-        const y = Array.from(x, (x) => x * Math.tan(Math.radians(phi)) - ((g*x**2)/(2* v **2 * Math.cos(Math.radians(phi))**2)))
-        source.data = { x, y }
-    """)
+    # adjust the main plot to make room for the sliders
+    fig.subplots_adjust(left=0.25, bottom=0.25)
 
-    velocity.js_on_change('value', callback)
-    angle.js_on_change('value', callback)
+    # Make a horizontal slider to control the frequency.
+    ax_vel = fig.add_axes([0.25, 0.1, 0.65, 0.03])
+    vel_slider = Slider(
+        ax=ax_vel,
+        label='Velocity [m/s]',
+        valmin=0.1,
+        valmax=12,
+        valinit=8,
+        valstep=0.1,
+    )
 
-    output_notebook()
+    # Make a vertically oriented slider to control the amplitude
+    ax_degree = fig.add_axes([0.1, 0.25, 0.0225, 0.63])
+    degree_slider = Slider(
+        ax=ax_degree,
+        label='Angle [degree]',
+        valmin=0,
+        valmax=90,
+        valinit=10,
+        valstep=1,
+        orientation="vertical"
+    )
 
-    return show(row(plot, column(velocity, angle)))
+    # The function to be called anytime a slider's value changes
+    def update(val):
+        line.set_ydata(f(x, vel_slider.val, degree_slider.val))
+        dot.set_xdata(d(vel_slider.val, degree_slider.val))
+        text_.set_text('Distance: {:.2f}'.format(d(vel_slider.val, degree_slider.val)))
+        fig.canvas.draw_idle()
+
+    # register the update function with each slider
+    vel_slider.on_changed(update)
+    degree_slider.on_changed(update)
+
+    return plt.show()
